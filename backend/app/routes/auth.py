@@ -5,7 +5,7 @@ from app.models.user import User, PyObjectId
 from app.schemas.user import UserCreate, UserResponse
 from app.utils.security import get_password_hash, verify_password, create_access_token
 from bson import ObjectId
-from datetime import timedelta
+from datetime import timedelta, datetime
 import os
 
 router = APIRouter()
@@ -31,10 +31,12 @@ async def register(user: UserCreate):
     # Hash password
     hashed_password = get_password_hash(user.password)
     
-    # Create user document
+    # Create user document with timestamps
     user_dict = user.dict()
     user_dict["password"] = hashed_password
     user_dict["_id"] = ObjectId()
+    user_dict["created_at"] = datetime.utcnow()
+    user_dict["updated_at"] = datetime.utcnow()
     
     # Insert user
     result = await users_collection.insert_one(user_dict)
@@ -49,12 +51,20 @@ async def register(user: UserCreate):
         expires_delta=access_token_expires
     )
     
-    # Return user without password
-    created_user["id"] = str(created_user["_id"])
-    created_user.pop("password")
-    created_user.pop("_id")
+    # Build response with all required fields
+    response_data = {
+        "id": str(created_user["_id"]),
+        "name": created_user["name"],
+        "phone": created_user["phone"],
+        "email": created_user["email"],
+        "role": created_user["role"],
+        "username": created_user["username"],
+        "created_at": created_user["created_at"],
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
     
-    return {**created_user, "access_token": access_token, "token_type": "bearer"}
+    return response_data
 
 @router.post("/login")
 async def login(email: str, password: str):
@@ -77,9 +87,17 @@ async def login(email: str, password: str):
         expires_delta=access_token_expires
     )
     
-    # Return user without password
-    user["id"] = str(user["_id"])
-    user.pop("password")
-    user.pop("_id")
+    # Build response with all required fields
+    response_data = {
+        "id": str(user["_id"]),
+        "name": user["name"],
+        "phone": user["phone"],
+        "email": user["email"],
+        "role": user["role"],
+        "username": user["username"],
+        "created_at": user.get("created_at", datetime.utcnow()),
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
     
-    return {**user, "access_token": access_token, "token_type": "bearer"}
+    return response_data

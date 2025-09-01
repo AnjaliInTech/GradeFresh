@@ -17,7 +17,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     role: str
     username: str
-    created_at: datetime
+    created_at: Optional[datetime] = None  # Make this optional
 
     class Config:
         from_attributes = True
