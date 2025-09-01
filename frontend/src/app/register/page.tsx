@@ -2,10 +2,10 @@
 
 import React, { useState } from "react";
 import Header from "@/app/components/header";
-import Image from "next/image";
 import Link from "next/link";
 import { Eye, EyeOff, User, Mail, Phone, Lock, ChevronDown } from "lucide-react";
 import Footer from "../components/footer";
+import { useRouter } from "next/navigation";
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -18,25 +18,78 @@ const RegisterPage = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const router = useRouter();
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(""); // Clear error when user starts typing
+    setSuccess(""); // Clear success message
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError("");
+    setSuccess("");
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log("Form Data:", formData);
+    try {
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      
+      const response = await fetch(`${API_URL}/api/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        console.log('Registration successful:', data);
+        setSuccess("Registration successful! Redirecting to login...");
+        
+        // Store token if available
+        if (data.access_token) {
+          localStorage.setItem('token', data.access_token);
+          localStorage.setItem('user', JSON.stringify({
+            id: data.id,
+            name: data.name,
+            email: data.email,
+            role: data.role
+          }));
+        }
+        
+        // Redirect to login after 2 seconds
+        setTimeout(() => {
+          router.push('/signin');
+        }, 2000);
+        
+      } else {
+        // Handle different error types from backend
+        if (data.detail) {
+          if (Array.isArray(data.detail)) {
+            setError(data.detail.map((err: any) => err.msg).join(', '));
+          } else {
+            setError(data.detail);
+          }
+        } else {
+          setError('Registration failed. Please try again.');
+        }
+        console.error('Registration failed:', data);
+      }
+    } catch (error: any) {
+      setError('Network error. Please check if the server is running.');
+      console.error('Error:', error);
+    } finally {
       setIsSubmitting(false);
-      // Add success notification/redirect here later
-    }, 1500);
+    }
   };
 
   return (
-    <div className="relative min-h-screen  bg-white">
+    <div className="relative min-h-screen bg-white">
       {/* Header */}
       <Header />
 
@@ -55,6 +108,20 @@ const RegisterPage = () => {
             <p className="text-gray-800">Join our fruity community today</p>
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+              {error}
+            </div>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+              {success}
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
@@ -68,6 +135,7 @@ const RegisterPage = () => {
                 onChange={handleChange}
                 className="w-full pl-10 pr-4 py-3 bg-white border border-[#036424] rounded-xl focus:ring-2 focus:ring-[#a3d921] focus:border-transparent transition-all text-black"
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -83,6 +151,7 @@ const RegisterPage = () => {
                 onChange={handleChange}
                 className="w-full pl-10 pr-4 py-3 bg-white border border-[#036424] rounded-xl focus:ring-2 focus:ring-[#a3d921] focus:border-transparent transition-all text-black"
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -96,8 +165,9 @@ const RegisterPage = () => {
                 placeholder="Email Address"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3  bg-white border border-[#036424] rounded-xl focus:ring-2 focus:ring-[#a3d921] focus:border-transparent transition-all text-black"
+                className="w-full pl-10 pr-4 py-3 bg-white border border-[#036424] rounded-xl focus:ring-2 focus:ring-[#a3d921] focus:border-transparent transition-all text-black"
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -111,6 +181,7 @@ const RegisterPage = () => {
                 onChange={handleChange}
                 className="w-full pl-10 pr-10 py-3 bg-white border border-[#036424] rounded-xl focus:ring-2 focus:ring-[#a3d921] focus:border-transparent appearance-none transition-all text-black"
                 required
+                disabled={isSubmitting}
               >
                 <option value="">Select Role</option>
                 <option value="exporters">Exporters</option>
@@ -134,6 +205,7 @@ const RegisterPage = () => {
                 onChange={handleChange}
                 className="w-full pl-10 pr-4 py-3 bg-white border border-[#036424] rounded-xl focus:ring-2 focus:ring-[#a3d921] focus:border-transparent transition-all text-black"
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -149,11 +221,13 @@ const RegisterPage = () => {
                 onChange={handleChange}
                 className="w-full pl-10 pr-12 py-3 bg-white border border-[#036424] rounded-xl focus:ring-2 focus:ring-[#a3d921] focus:border-transparent transition-all text-black"
                 required
+                disabled={isSubmitting}
               />
               <button
                 type="button"
                 className="absolute inset-y-0 right-0 flex items-center pr-3"
                 onClick={() => setShowPassword(!showPassword)}
+                disabled={isSubmitting}
               >
                 {showPassword ? (
                   <EyeOff className="h-5 w-5 text-gray-600" />
@@ -166,13 +240,13 @@ const RegisterPage = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full bg-gradient-to-r from-[#a3d921] to-[#036424] text-black py-3 rounded-xl font-medium shadow-md hover:shadow-lg transition-all flex items-center justify-center ${
-                isSubmitting ? "opacity-80 cursor-not-allowed" : ""
+              className={`w-full bg-gradient-to-r from-[#a3d921] to-[#036424] text-white py-3 rounded-xl font-medium shadow-md hover:shadow-lg transition-all flex items-center justify-center ${
+                isSubmitting ? "opacity-80 cursor-not-allowed" : "hover:from-[#8ec61d] hover:to-[#02521c]"
               }`}
             >
               {isSubmitting ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
@@ -186,11 +260,14 @@ const RegisterPage = () => {
 
           <div className="relative flex items-center justify-center my-6">
             <div className="border-t border-gray-500 w-full"></div>
-            <span className="bg-white px-3 text-sm text-gray-800">Or continue with</span>
+            <span className="bg-[#e0f5a1] px-3 text-sm text-gray-800">Or continue with</span>
           </div>
 
           <div className="flex justify-center gap-4 mb-6">
-            <button className="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all">
+            <button 
+              className="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-all"
+              disabled={isSubmitting}
+            >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>

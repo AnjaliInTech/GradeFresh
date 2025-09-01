@@ -1,0 +1,85 @@
+from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.encoders import jsonable_encoder
+from app.database.mongodb import get_database
+from app.models.user import User, PyObjectId
+from app.schemas.user import UserCreate, UserResponse
+from app.utils.security import get_password_hash, verify_password, create_access_token
+from bson import ObjectId
+from datetime import timedelta
+import os
+
+router = APIRouter()
+
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+async def register(user: UserCreate):
+    db = get_database()
+    users_collection = db["users"]
+    
+    # Check if user already exists
+    if await users_collection.find_one({"email": user.email}):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered"
+        )
+    
+    if await users_collection.find_one({"username": user.username}):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Username already taken"
+        )
+    
+    # Hash password
+    hashed_password = get_password_hash(user.password)
+    
+    # Create user document
+    user_dict = user.dict()
+    user_dict["password"] = hashed_password
+    user_dict["_id"] = ObjectId()
+    
+    # Insert user
+    result = await users_collection.insert_one(user_dict)
+    
+    # Get the created user
+    created_user = await users_collection.find_one({"_id": result.inserted_id})
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=30)
+    access_token = create_access_token(
+        data={"sub": str(created_user["_id"])}, 
+        expires_delta=access_token_expires
+    )
+    
+    # Return user without password
+    created_user["id"] = str(created_user["_id"])
+    created_user.pop("password")
+    created_user.pop("_id")
+    
+    return {**created_user, "access_token": access_token, "token_type": "bearer"}
+
+@router.post("/login")
+async def login(email: str, password: str):
+    db = get_database()
+    users_collection = db["users"]
+    
+    # Find user
+    user = await users_collection.find_one({"email": email})
+    if not user or not verify_password(password, user["password"]):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Create access token
+    access_token_expires = timedelta(minutes=30)
+    access_token = create_access_token(
+        data={"sub": str(user["_id"])}, 
+        expires_delta=access_token_expires
+    )
+    
+    # Return user without password
+    user["id"] = str(user["_id"])
+    user.pop("password")
+    user.pop("_id")
+    
+    return {**user, "access_token": access_token, "token_type": "bearer"}
