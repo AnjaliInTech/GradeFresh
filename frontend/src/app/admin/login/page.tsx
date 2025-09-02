@@ -12,7 +12,7 @@ const AdminLogin = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<any>("");
   const router = useRouter();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -21,38 +21,66 @@ const AdminLogin = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError("");
+  e.preventDefault();
+  setIsSubmitting(true);
+  setError("");
 
-    try {
-      // For now, use hardcoded admin credentials
-      // Later, replace with API call to your backend
-      if (formData.email === "admin@gradefresh.com" && formData.password === "adminpassword") {
-        // Store admin authentication
-        localStorage.setItem("admin_token", "admin_demo_token");
-        localStorage.setItem("admin_user", JSON.stringify({
-          id: "admin_1",
-          name: "Admin User",
-          email: "admin@gradefresh.com",
-          role: "admin"
-        }));
-        
-        // Redirect to admin dashboard
-        router.push("/admin/dashboard");
+  try {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    
+    // DEBUG: Log what we're sending
+    console.log("Sending login request to:", `${API_URL}/api/admin/login`);
+    console.log("Email:", formData.email);
+    
+    const formDataParams = new URLSearchParams();
+    formDataParams.append('email', formData.email);  // FIXED: Use 'email' not 'username'
+    formDataParams.append('password', formData.password);
+
+const response = await fetch(`${API_URL}/api/admin/login`, {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded',
+  },
+  body: formDataParams,
+});
+
+    // DEBUG: Log response status
+    console.log("Response status:", response.status);
+    
+    const data = await response.json();
+    console.log("Response data:", data);  // DEBUG: Log response data
+
+    if (response.ok) {
+      // Store authentication data
+      localStorage.setItem("admin_token", data.access_token);
+      localStorage.setItem("admin_user", JSON.stringify({
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        role: data.role
+      }));
+      
+      // Redirect to admin dashboard
+      router.push("/admin/dashboard");
+    } else {
+      // Handle different error formats
+      if (data.detail) {
+        setError(data.detail);
       } else {
-        setError("Invalid admin credentials");
+        setError(data.message || "Invalid credentials");
       }
-    } catch (error) {
-      setError("Login failed. Please try again.");
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  } catch (error) {
+    console.error("Login error:", error);
+    setError("Login failed. Please check your connection and try again.");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-[#fff] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden border-2 border-[#036424]">
         {/* Header */}
         <div className="bg-[#036424] p-6 text-center">
           <div className="flex items-center justify-center mb-4">
@@ -66,7 +94,7 @@ const AdminLogin = () => {
         <div className="p-8">
           {error && (
             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6">
-              {error}
+              {typeof error === 'string' ? error : JSON.stringify(error)}
             </div>
           )}
 
@@ -106,7 +134,7 @@ const AdminLogin = () => {
                 />
                 <button
                   type="button"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-black hover:text-black"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isSubmitting}
                 >
@@ -139,16 +167,6 @@ const AdminLogin = () => {
               )}
             </button>
           </form>
-
-          {/* Demo Credentials */}
-          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <h3 className="text-sm font-medium text-yellow-800 mb-2">Demo Credentials:</h3>
-            <p className="text-xs text-yellow-700">
-              Email: <strong>admin@gradefresh.com</strong>
-              <br />
-              Password: <strong>adminpassword</strong>
-            </p>
-          </div>
 
           {/* Back to main site */}
           <div className="mt-6 text-center">

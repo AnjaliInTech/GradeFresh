@@ -101,3 +101,24 @@ async def login(email: str, password: str):
     }
     
     return response_data
+
+@router.get("/admin/check")
+async def check_admin_status(email: str):
+    """
+    Check if a user is an admin (useful for frontend to show/hide admin features)
+    """
+    db = get_database()
+    users_collection = db["users"]
+    
+    user = await users_collection.find_one({"email": email})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    return {
+        "is_admin": user["role"] == "admin",
+        "email": user["email"],
+        "role": user["role"]
+    }
