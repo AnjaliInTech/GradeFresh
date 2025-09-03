@@ -1,9 +1,11 @@
 "use client";
 
 import React, { useState, useRef } from 'react';
-import { Upload, CheckCircle, XCircle, ImageIcon, ArrowRight, Star, Loader2, AlertCircle } from 'lucide-react';
+import { Upload, CheckCircle, XCircle, ImageIcon, ArrowRight, Star, Loader2, AlertCircle, Download } from 'lucide-react';
 import Footer from '../components/footer';
 import Header from '../components/header';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const FruitQualityChecker = () => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -11,7 +13,9 @@ const FruitQualityChecker = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const reportRef = useRef<HTMLDivElement>(null);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -85,6 +89,72 @@ const FruitQualityChecker = () => {
       setError(err instanceof Error ? err.message : 'Failed to analyze image');
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  // Add this function for generating PDF
+  const downloadPDF = async () => {
+    if (!reportRef.current || !selectedImage || !analysisResult) return;
+    
+    setIsGeneratingPDF(true);
+    try {
+      // Create PDF with formatted content (not screenshot)
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const margin = 20;
+      let yPosition = margin;
+      
+      // Add title
+      pdf.setFontSize(20);
+      pdf.setTextColor(3, 100, 36); // #036424 color
+      pdf.text('Fruit Quality Analysis Report', pdfWidth / 2, yPosition, { align: 'center' });
+      yPosition += 15;
+      
+      // Add date
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Report Date: ${new Date().toLocaleDateString()}`, margin, yPosition);
+      yPosition += 15;
+      
+      // Add fruit image
+      const imgWidth = pdfWidth - 2 * margin;
+      const imgHeight = imgWidth * 0.75;
+      pdf.addImage(selectedImage, 'JPEG', margin, yPosition, imgWidth, imgHeight);
+      yPosition += imgHeight + 15;
+      
+      // Add quality assessment
+      pdf.setFontSize(16);
+      pdf.setTextColor(3, 100, 36);
+      pdf.text('Quality Assessment', margin, yPosition);
+      yPosition += 10;
+      
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Status: ${analysisResult.prediction.quality_status}`, margin, yPosition);
+      yPosition += 8;
+      pdf.text(`Confidence: ${(analysisResult.prediction.confidence * 100).toFixed(1)}%`, margin, yPosition);
+      yPosition += 8;
+      pdf.text(`Class: ${analysisResult.prediction.class.replace(/_/g, ' ')}`, margin, yPosition);
+      yPosition += 15;
+      
+      // Add description (with word wrapping)
+      const description = analysisResult.prediction.description;
+      const splitDescription = pdf.splitTextToSize(description, pdfWidth - 2 * margin);
+      pdf.text('Description:', margin, yPosition);
+      yPosition += 8;
+      pdf.text(splitDescription, margin, yPosition);
+      yPosition += splitDescription.length * 5 + 10;
+      
+      // Add export suitability
+      pdf.text(`Export Suitable: ${analysisResult.prediction.export_suitable ? 'Yes' : 'No'}`, margin, yPosition);
+      
+      // Save the PDF
+      pdf.save(`fruit-quality-report-${new Date().toISOString().slice(0, 10)}.pdf`);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      setError('Failed to generate PDF report');
+    } finally {
+      setIsGeneratingPDF(false);
     }
   };
 
@@ -197,8 +267,24 @@ const FruitQualityChecker = () => {
             </div>
 
             {/* Right Side - Results */}
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h3 className="text-2xl font-semibold text-gray-800 mb-6">Quality Analysis</h3>
+            <div className="bg-white rounded-2xl shadow-lg p-8" ref={reportRef}>
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-semibold text-gray-800">Quality Analysis</h3>
+                {analysisResult && (
+                  <button
+                    onClick={downloadPDF}
+                    disabled={isGeneratingPDF}
+                    className="flex items-center bg-[#036424] text-white px-4 py-2 rounded-lg hover:bg-[#02521c] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isGeneratingPDF ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4 mr-2" />
+                    )}
+                    {isGeneratingPDF ? 'Generating...' : 'Download PDF'}
+                  </button>
+                )}
+              </div>
               
               {isAnalyzing ? (
                 <div className="text-center py-12">
@@ -308,7 +394,7 @@ const FruitQualityChecker = () => {
               <div className="text-center">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-[#036424]">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a极2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 极0 002 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a极2 2 0 012.828 极0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 极0 002 2z" />
                   </svg>
                 </div>
                 <h4 className="font-semibold text-gray-800 mb-2">Upload Image</h4>
@@ -317,20 +403,20 @@ const FruitQualityChecker = () => {
               
               {/* Step 2 */}
               <div className="text-center">
-                <div className="w-16极 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-[#036424]">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-[#036424]">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h4 className="font-semibold text-gray-800 mb-2">AI Analysis</h4>
+                <h4 className="font-semibold text极-gray-800 mb-2">AI Analysis</h4>
                 <p className="text-gray-600">Our system processes the image</p>
               </div>
               
               {/* Step 3 */}
               <div className="text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-[极036424]">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-[#036424]">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0极z" />
                   </svg>
                 </div>
                 <h4 className="font-semibold text-gray-800 mb-2">Get Results</h4>
@@ -341,7 +427,7 @@ const FruitQualityChecker = () => {
               <div className="text-center">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 text-[#036424]">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2极h2a2 2 0 002-2M9 5a2 2 极0 012-2h2a2 2 0 012 2" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
                 <h4 className="font-semibold text-gray-800 mb-2">Take Action</h4>
