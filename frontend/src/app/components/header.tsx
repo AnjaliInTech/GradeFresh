@@ -33,16 +33,17 @@ export default function Header() {
         <nav className="hidden md:flex flex-1 justify-center">
           <div className={`${poppins.className} space-x-8 text-[18px] tracking-wide uppercase flex items-center`}>
             <Link href="/" className="text-[#000] hover:text-[#036424]">Home</Link>
-            <Link href="/upload" className="text-[#000] hover:text-green-600">Upload</Link>
-            <Link href="/reports" className="text-[#000] hover:text-green-600">Reports</Link>
-            <Link href="/about" className="text-[#000] hover:text-green-600">About</Link>
-            <Link href="/contact" className="text-[#000] hover:text-[#036424]">Contact</Link>
+            <Link href="/aboutus" className="text-[#000] hover:text-[#036424]">About US</Link>
+            <Link href="/quality" className="text-[#000] hover:text-[#036424]">Upload</Link>
+            <Link href="/FAQ" className="text-[#000] hover:text-[#036424]">FAQ</Link>
+            <Link href="/reports" className="text-[#000] hover:text-[#036424]">News</Link>
+            <Link href="/contactus" className="text-[#000] hover:text-[#036424]">Contact us</Link>
           </div>
         </nav>
 
         {/* Desktop Sign In Button */}
         <div className="hidden md:block">
-          <Link href="/login">
+          <Link href="/signin">
             <button className="bg-gradient-to-t from-[#a3d920] to-[#036424] text-white px-10 py-3 rounded-full text-sm hover:opacity-90 transition duration-200 tracking-wide uppercase">
               Sign In
             </button>
@@ -67,7 +68,7 @@ export default function Header() {
             <Link href="/reports" onClick={() => setMenuOpen(false)} className="text-[#000] hover:text-green-600">Reports</Link>
             <Link href="/about" onClick={() => setMenuOpen(false)} className="text-[#000] hover:text-green-600">About</Link>
             <Link href="/contact" onClick={() => setMenuOpen(false)} className="text-[#000] hover:text-[#036424]">Contact</Link>
-            <Link href="/login" onClick={() => setMenuOpen(false)}>
+            <Link href="/signin" onClick={() => setMenuOpen(false)}>
               <button className="bg-gradient-to-t from-[#a3d920] to-[#036424]  text-white px-6 py-2 rounded-full text-sm hover:opacity-90 transition duration-200 tracking-wide uppercase mt-2">
                 Sign In
               </button>
