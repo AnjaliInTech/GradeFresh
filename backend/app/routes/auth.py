@@ -1,8 +1,8 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Body
 from fastapi.encoders import jsonable_encoder
 from app.database.mongodb import get_database
 from app.models.user import User, PyObjectId
-from app.schemas.user import UserCreate, UserResponse
+from app.schemas.user import UserCreate, UserResponse, LoginRequest
 from app.utils.security import get_password_hash, verify_password, create_access_token
 from bson import ObjectId
 from datetime import timedelta, datetime
@@ -67,13 +67,13 @@ async def register(user: UserCreate):
     return response_data
 
 @router.post("/login")
-async def login(email: str, password: str):
+async def login(login_data: LoginRequest = Body(...)):
     db = get_database()
     users_collection = db["users"]
     
     # Find user
-    user = await users_collection.find_one({"email": email})
-    if not user or not verify_password(password, user["password"]):
+    user = await users_collection.find_one({"email": login_data.email})
+    if not user or not verify_password(login_data.password, user["password"]):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid credentials",
