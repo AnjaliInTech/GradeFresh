@@ -17,7 +17,13 @@ class UserResponse(BaseModel):
     email: EmailStr
     role: str
     username: str
-    created_at: Optional[datetime] = None  # Make this optional
+    created_at: Optional[datetime] = None
+    access_token: Optional[str] = None
+    token_type: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
