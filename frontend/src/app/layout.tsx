@@ -1,4 +1,5 @@
 // import type { Metadata } from "next";
+import { AuthProvider } from './contexts/AuthContext'
 import { Geist, Geist_Mono } from "next/font/google";
 import { Cinzel, Poppins } from "next/font/google";
 import "./globals.css";
@@ -26,16 +27,16 @@ const poppins = Poppins({
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${cinzel.variable} ${poppins.variable} antialiased`}
-      >
-        {children}
+      <body className={poppins.className}>
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
-  );
+  )
 }

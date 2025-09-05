@@ -4,7 +4,8 @@ import { useState } from 'react'
 import { Poppins } from 'next/font/google'
 import Image from 'next/image'
 import Link from 'next/link'
-import { Menu, X } from 'lucide-react' // for hamburger icon
+import { Menu, X, LogOut, User } from 'lucide-react'
+import { useAuth } from '../contexts/AuthContext'
 
 const poppins = Poppins({
   subsets: ['latin'],
@@ -13,6 +14,12 @@ const poppins = Poppins({
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const { user, isAuthenticated, logout } = useAuth()
+
+  const handleLogout = () => {
+    logout()
+    setMenuOpen(false)
+  }
 
   return (
     <header className="bg-[#feffdd] shadow-md sticky top-0 z-50 ">
@@ -41,13 +48,29 @@ export default function Header() {
           </div>
         </nav>
 
-        {/* Desktop Sign In Button */}
-        <div className="hidden md:block">
-          <Link href="/signin">
-            <button className="bg-gradient-to-t from-[#a3d920] to-[#036424] text-white px-10 py-3 rounded-full text-sm hover:opacity-90 transition duration-200 tracking-wide uppercase">
-              Sign In
-            </button>
-          </Link>
+        {/* Desktop Auth Buttons */}
+        <div className="hidden md:flex items-center space-x-4">
+          {isAuthenticated ? (
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-700 flex items-center">
+                <User className="w-4 h-4 mr-1" />
+                {user?.name}
+              </span>
+              <button
+                onClick={handleLogout}
+                className="bg-gradient-to-t from-red-500 to-red-700 text-white px-6 py-3 rounded-full text-sm hover:opacity-90 transition duration-200 tracking-wide uppercase flex items-center"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Log Out
+              </button>
+            </div>
+          ) : (
+            <Link href="/signin">
+              <button className="bg-gradient-to-t from-[#a3d920] to-[#036424] text-white px-10 py-3 rounded-full text-sm hover:opacity-90 transition duration-200 tracking-wide uppercase">
+                Sign In
+              </button>
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Toggle */}
@@ -68,11 +91,28 @@ export default function Header() {
             <Link href="/reports" onClick={() => setMenuOpen(false)} className="text-[#000] hover:text-green-600">Reports</Link>
             <Link href="/about" onClick={() => setMenuOpen(false)} className="text-[#000] hover:text-green-600">About</Link>
             <Link href="/contact" onClick={() => setMenuOpen(false)} className="text-[#000] hover:text-[#036424]">Contact</Link>
-            <Link href="/signin" onClick={() => setMenuOpen(false)}>
-              <button className="bg-gradient-to-t from-[#a3d920] to-[#036424]  text-white px-6 py-2 rounded-full text-sm hover:opacity-90 transition duration-200 tracking-wide uppercase mt-2">
-                Sign In
-              </button>
-            </Link>
+            
+            {isAuthenticated ? (
+              <>
+                <div className="flex items-center text-gray-700">
+                  <User className="w-4 h-4 mr-2" />
+                  {user?.name}
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="bg-gradient-to-t from-red-500 to-red-700 text-white px-6 py-2 rounded-full text-sm hover:opacity-90 transition duration-200 tracking-wide uppercase flex items-center justify-center"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <Link href="/signin" onClick={() => setMenuOpen(false)}>
+                <button className="bg-gradient-to-t from-[#a3d920] to-[#036424] text-white px-6 py-2 rounded-full text-sm hover:opacity-90 transition duration-200 tracking-wide uppercase mt-2">
+                  Sign In
+                </button>
+              </Link>
+            )}
           </nav>
         </div>
       )}

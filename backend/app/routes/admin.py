@@ -188,3 +188,5 @@ async def get_all_users(admin: User = Depends(verify_admin)):
             del user["_id"]
     
     return users
+
+

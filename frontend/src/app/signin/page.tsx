@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import Footer from "../components/footer";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../contexts/AuthContext";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -18,14 +19,15 @@ const LoginPage = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const router = useRouter();
+  const { login } = useAuth();
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(""); // Clear error when user starts typing
     setSuccess(""); // Clear success message when user starts typing
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError("");
@@ -45,10 +47,17 @@ const LoginPage = () => {
       if (response.ok) {
         // Save token to localStorage
         localStorage.setItem("access_token", data.access_token);
-        localStorage.setItem("user", JSON.stringify(data));
+        
+        // Login user with context
+        login({
+          id: data.id,
+          name: data.name,
+          email: data.email,
+          role: data.role
+        });
         
         // Show success message
-        setSuccess("Login successfully!");
+        setSuccess("Login successful!");
         
         // Wait for 1.5 seconds before redirecting
         setTimeout(() => {
