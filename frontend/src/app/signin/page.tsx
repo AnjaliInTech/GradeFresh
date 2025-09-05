@@ -16,17 +16,20 @@ const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const router = useRouter();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError(""); // Clear error when user starts typing
+    setSuccess(""); // Clear success message when user starts typing
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError("");
+    setSuccess("");
     
     try {
       const response = await fetch("http://localhost:8000/api/login", {
@@ -44,12 +47,18 @@ const LoginPage = () => {
         localStorage.setItem("access_token", data.access_token);
         localStorage.setItem("user", JSON.stringify(data));
         
-        // Redirect based on role
-        if (data.role === "admin") {
-          router.push("/admin/dashboard");
-        } else {
-          router.push("/");
-        }
+        // Show success message
+        setSuccess("Login successfully!");
+        
+        // Wait for 1.5 seconds before redirecting
+        setTimeout(() => {
+          // Redirect based on role
+          if (data.role === "admin") {
+            router.push("/admin/dashboard");
+          } else {
+            router.push("/");
+          }
+        }, 1500);
       } else {
         setError(data.detail || "Login failed");
       }
@@ -61,7 +70,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="relative min-h-screen  bg-white">
+    <div className="relative min-h-screen bg-white">
       {/* Header */}
       <Header />
 
@@ -83,6 +92,12 @@ const LoginPage = () => {
           {error && (
             <div className="mb-4 p-3 bg-red-100 text-red-700 rounded-lg">
               {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded-lg">
+              {success}
             </div>
           )}
 
