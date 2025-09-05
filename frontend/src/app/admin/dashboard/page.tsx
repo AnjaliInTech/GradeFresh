@@ -14,7 +14,11 @@ import {
   Menu,
   X,
   AlertCircle,
-  Loader2
+  Loader2,
+  UserCheck,
+  Shield,
+  Truck,
+  Eye
 } from "lucide-react";
 import Image from "next/image";
 import AdminRoute from '@/app/components/Admin/AdminRoute';
@@ -31,12 +35,10 @@ const AdminDashboard = () => {
   }, []);
 
   const getAuthToken = () => {
-    // Try to get token from both possible locations
     return localStorage.getItem("access_token") || localStorage.getItem("admin_token");
   };
 
   const getUserData = () => {
-    // Try to get user data from both possible locations
     const userData = localStorage.getItem("user") || localStorage.getItem("admin_user");
     try {
       return userData ? JSON.parse(userData) : null;
@@ -47,8 +49,8 @@ const AdminDashboard = () => {
 
   const fetchAdminStats = async () => {
     try {
+      setLoading(true);
       const token = getAuthToken();
-      console.log("Fetching stats with token:", token ? "Token exists" : "No token");
       
       if (!token) {
         setError("Authentication required. Please sign in again.");
@@ -64,21 +66,16 @@ const AdminDashboard = () => {
         },
       });
 
-      console.log("Stats response status:", response.status);
-
       if (response.status === 401 || response.status === 403) {
         handleUnauthorized();
         return;
       }
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Failed to fetch stats:", response.status, errorText);
         throw new Error(`Failed to fetch dashboard data: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log("Stats data received:", data);
       setStats(data);
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -89,7 +86,6 @@ const AdminDashboard = () => {
   };
 
   const handleUnauthorized = () => {
-    // Clear all auth data
     localStorage.removeItem("access_token");
     localStorage.removeItem("admin_token");
     localStorage.removeItem("user");
@@ -98,7 +94,6 @@ const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    // Clear all auth data
     localStorage.removeItem("access_token");
     localStorage.removeItem("admin_token");
     localStorage.removeItem("user");
@@ -112,6 +107,11 @@ const AdminDashboard = () => {
     { name: "View Reports", icon: FileText, href: "/admin/reports" },
     { name: "System Settings", icon: Settings, href: "/admin/settings" },
   ];
+
+  // Debug function to check what stats we're receiving
+  const debugStats = () => {
+    console.log("Current stats:", stats);
+  };
 
   if (loading) {
     return (
@@ -153,13 +153,20 @@ const AdminDashboard = () => {
     );
   }
 
-  const StatCard = ({ icon: Icon, title, value, color, loading: isLoading }: any) => (
+  const StatCard = ({ 
+    icon: Icon, 
+    title, 
+    value, 
+    color, 
+    loading: isLoading, 
+    description 
+  }: any) => (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <div className="flex items-center">
         <div className={`p-3 rounded-lg ${color} mr-4`}>
           <Icon className="h-6 w-6 text-white" />
         </div>
-        <div>
+        <div className="flex-1">
           <p className="text-gray-600 text-sm font-medium">{title}</p>
           <p className="text-2xl font-bold text-gray-800">
             {isLoading ? (
@@ -168,6 +175,9 @@ const AdminDashboard = () => {
               value
             )}
           </p>
+          {description && (
+            <p className="text-xs text-gray-500 mt-1">{description}</p>
+          )}
         </div>
       </div>
     </div>
@@ -175,6 +185,12 @@ const AdminDashboard = () => {
 
   const userData = getUserData();
   const welcomeName = userData?.name || "Administrator";
+
+  // Extract user counts with fallbacks for different API response formats
+  const totalUsers = stats?.total_users || stats?.totalUsers || 0;
+  const exporterCount = stats?.exporters || stats?.exporter_count || stats?.exporterCount || 0;
+  const importerCount = stats?.importers || stats?.importer_count || stats?.importerCount || 0;
+  const inspectorCount = stats?.inspectors || stats?.inspector_count || stats?.inspectorCount || 0;
 
   return (
     <AdminRoute>
@@ -205,7 +221,11 @@ const AdminDashboard = () => {
                   <button
                     key={item.name}
                     onClick={() => router.push(item.href)}
-                    className="w-full flex items-center px-4 py-3 text-[#02521c] hover:bg-[#036424] hover:text-white rounded-lg transition-colors duration-200"
+                    className={`w-full flex items-center px-4 py-3 rounded-lg transition-colors duration-200 ${
+                      item.name === "Dashboard" 
+                        ? "bg-[#036424] text-white" 
+                        : "text-[#02521c] hover:bg-[#036424] hover:text-white"
+                    }`}
                   >
                     <IconComponent className="h-5 w-5 mr-3" />
                     <span className="font-medium">{item.name}</span>
@@ -267,6 +287,13 @@ const AdminDashboard = () => {
 
               <div className="flex items-center space-x-4">
                 <button
+                  onClick={debugStats}
+                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                  title="Debug stats"
+                >
+                  <Eye className="h-5 w-5" />
+                </button>
+                <button
                   onClick={fetchAdminStats}
                   className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                   title="Refresh data"
@@ -291,44 +318,34 @@ const AdminDashboard = () => {
               <StatCard
                 icon={Users}
                 title="Total Users"
-                value={stats?.total_users ?? 0}
+                value={totalUsers}
                 color="bg-blue-500"
                 loading={!stats}
+                description="All registered users"
               />
               <StatCard
-                icon={Users}
+                icon={UserCheck}
                 title="Exporters"
-                value={stats?.exporters ?? 0}
+                value={exporterCount}
                 color="bg-green-500"
                 loading={!stats}
+                description="Fruit exporters"
               />
               <StatCard
-                icon={Users}
+                icon={Truck}
                 title="Importers"
-                value={stats?.importers ?? 0}
+                value={importerCount}
                 color="bg-yellow-500"
                 loading={!stats}
+                description="Fruit importers"
               />
               <StatCard
-                icon={Users}
+                icon={Shield}
                 title="Inspectors"
-                value={stats?.inspectors ?? 0}
-                color="bg-red-500"
+                value={inspectorCount}
+                color="bg-orange-500"
                 loading={!stats}
-              />
-              <StatCard
-                icon={Package}
-                title="Total Products"
-                value={stats?.total_products ?? 0}
-                color="bg-purple-500"
-                loading={!stats}
-              />
-              <StatCard
-                icon={Users}
-                title="Admins"
-                value={stats?.admins ?? 1}
-                color="bg-indigo-500"
-                loading={!stats}
+                description="Quality inspectors"
               />
             </div>
 
