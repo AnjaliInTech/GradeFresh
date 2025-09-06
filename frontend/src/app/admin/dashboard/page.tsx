@@ -18,7 +18,9 @@ import {
   UserCheck,
   Shield,
   Truck,
-  Eye
+  Eye,
+  TrendingUp,
+  PieChart
 } from "lucide-react";
 import Image from "next/image";
 import AdminRoute from '@/app/components/Admin/AdminRoute';
@@ -104,7 +106,7 @@ const AdminDashboard = () => {
   const navigationItems = [
     { name: "Dashboard", icon: Home, href: "/admin/dashboard" },
     { name: "Manage Users", icon: Users, href: "/admin/users" },
-      { name: "Manage News", icon: FileText, href: "/admin/news" },
+    { name: "Manage News", icon: FileText, href: "/admin/news" },
     { name: "View Reports", icon: FileText, href: "/admin/reports" },
     { name: "System Settings", icon: Settings, href: "/admin/settings" },
   ];
@@ -160,7 +162,8 @@ const AdminDashboard = () => {
     value, 
     color, 
     loading: isLoading, 
-    description 
+    description,
+    trend
   }: any) => (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <div className="flex items-center">
@@ -179,10 +182,103 @@ const AdminDashboard = () => {
           {description && (
             <p className="text-xs text-gray-500 mt-1">{description}</p>
           )}
+          {trend && (
+            <div className={`flex items-center mt-1 text-xs ${trend.value > 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <TrendingUp className={`h-3 w-3 mr-1 ${trend.value < 0 ? 'transform rotate-180' : ''}`} />
+              <span>{trend.value > 0 ? '+' : ''}{trend.value}% {trend.label}</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
+
+  // Chart components
+  const UserDistributionChart = () => {
+    const userData = getUserDistributionData();
+    
+    return (
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">User Distribution</h3>
+        <div className="grid grid-cols-2 gap-4">
+          {userData.map((item, index) => (
+            <div key={index} className="flex items-center">
+              <div 
+                className="w-3 h-3 rounded-full mr-2" 
+                style={{ backgroundColor: item.color }}
+              ></div>
+              <span className="text-sm text-gray-600">{item.name}</span>
+              <span className="text-sm font-medium text-gray-800 ml-auto">{item.value}</span>
+            </div>
+          ))}
+        </div>
+        <div className="mt-4 h-4 bg-gray-100 rounded-full overflow-hidden">
+          <div className="flex h-full">
+            {userData.map((item, index) => (
+              <div
+                key={index}
+                className="h-full"
+                style={{ width: `${item.percentage}%`, backgroundColor: item.color }}
+              ></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const ActivityChart = () => {
+    const activityData = [
+      { day: 'Mon', value: 65 },
+      { day: 'Tue', value: 78 },
+      { day: 'Wed', value: 90 },
+      { day: 'Thu', value: 81 },
+      { day: 'Fri', value: 56 },
+      { day: 'Sat', value: 40 },
+      { day: 'Sun', value: 30 }
+    ];
+    
+    const maxValue = Math.max(...activityData.map(d => d.value));
+    
+    return (
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4">Weekly Activity</h3>
+        <div className="flex items-end justify-between h-32">
+          {activityData.map((item, index) => (
+            <div key={index} className="flex flex-col items-center">
+              <div
+                className="w-8 bg-gradient-to-t from-[#036424] to-[#a3d920] rounded-t transition-all hover:opacity-80"
+                style={{ height: `${(item.value / maxValue) * 80}px` }}
+              ></div>
+              <span className="text-xs text-gray-500 mt-2">{item.day}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
+  const getUserDistributionData = () => {
+    const totalUsers = stats?.total_users || stats?.totalUsers || 0;
+    const exporterCount = stats?.exporters || stats?.exporter_count || stats?.exporterCount || 0;
+    const importerCount = stats?.importers || stats?.importer_count || stats?.importerCount || 0;
+    const inspectorCount = stats?.inspectors || stats?.inspector_count || stats?.inspectorCount || 0;
+    const otherCount = totalUsers - (exporterCount + importerCount + inspectorCount);
+    
+    const data = [
+      { name: 'Exporters', value: exporterCount, color: '#10B981' },
+      { name: 'Importers', value: importerCount, color: '#F59E0B' },
+      { name: 'Inspectors', value: inspectorCount, color: '#EF4444' },
+      { name: 'Others', value: otherCount, color: '#6B7280' }
+    ];
+    
+    const total = data.reduce((sum, item) => sum + item.value, 0);
+    
+    return data.map(item => ({
+      ...item,
+      percentage: total > 0 ? Math.round((item.value / total) * 100) : 0
+    }));
+  };
 
   const userData = getUserData();
   const welcomeName = userData?.name || "Administrator";
@@ -323,6 +419,7 @@ const AdminDashboard = () => {
                 color="bg-blue-500"
                 loading={!stats}
                 description="All registered users"
+                trend={{ value: 12, label: "from last week" }}
               />
               <StatCard
                 icon={UserCheck}
@@ -331,6 +428,7 @@ const AdminDashboard = () => {
                 color="bg-green-500"
                 loading={!stats}
                 description="Fruit exporters"
+                trend={{ value: 8, label: "from last week" }}
               />
               <StatCard
                 icon={Truck}
@@ -339,6 +437,7 @@ const AdminDashboard = () => {
                 color="bg-yellow-500"
                 loading={!stats}
                 description="Fruit importers"
+                trend={{ value: 5, label: "from last week" }}
               />
               <StatCard
                 icon={Shield}
@@ -347,11 +446,18 @@ const AdminDashboard = () => {
                 color="bg-orange-500"
                 loading={!stats}
                 description="Quality inspectors"
+                trend={{ value: 15, label: "from last week" }}
               />
             </div>
 
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              <UserDistributionChart />
+              <ActivityChart />
+            </div>
+
             {/* Quick Actions */}
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
               <h2 className="text-xl font-semibold text-gray-800 mb-6">Quick Actions</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <button 
@@ -363,20 +469,23 @@ const AdminDashboard = () => {
                   <span className="text-xs text-blue-600 mt-1">View all registered users</span>
                 </button>
                 <button 
+                  onClick={() => router.push("/admin/news")}
                   className="flex flex-col items-center justify-center p-6 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors group"
                 >
                   <FileText className="h-8 w-8 text-green-600 mb-2 group-hover:scale-110 transition-transform" />
-                  <span className="text-green-800 font-medium">View Reports</span>
-                  <span className="text-xs text-green-600 mt-1">Access system reports</span>
+                  <span className="text-green-800 font-medium">Manage News</span>
+                  <span className="text-xs text-green-600 mt-1">Create and edit news</span>
                 </button>
                 <button 
+                  onClick={() => router.push("/admin/reports")}
                   className="flex flex-col items-center justify-center p-6 bg-purple-50 border border-purple-200 rounded-lg hover:bg-purple-100 transition-colors group"
                 >
-                  <Package className="h-8 w-8 text-purple-600 mb-2 group-hover:scale-110 transition-transform" />
-                  <span className="text-purple-800 font-medium">Manage Products</span>
-                  <span className="text-xs text-purple-600 mt-1">Product catalog</span>
+                  <BarChart3 className="h-8 w-8 text-purple-600 mb-2 group-hover:scale-110 transition-transform" />
+                  <span className="text-purple-800 font-medium">View Reports</span>
+                  <span className="text-xs text-purple-600 mt-1">Access system reports</span>
                 </button>
                 <button 
+                  onClick={() => router.push("/admin/settings")}
                   className="flex flex-col items-center justify-center p-6 bg-orange-50 border border-orange-200 rounded-lg hover:bg-orange-100 transition-colors group"
                 >
                   <Settings className="h-8 w-8 text-orange-600 mb-2 group-hover:scale-110 transition-transform" />
@@ -386,15 +495,6 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Recent Activity Section */}
-            <div className="mt-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-800 mb-6">Recent Activity</h2>
-              <div className="text-center text-gray-500 py-8">
-                <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <p>No recent activity to display</p>
-                <p className="text-sm">Activity monitoring will be available soon</p>
-              </div>
-            </div>
           </main>
         </div>
 
