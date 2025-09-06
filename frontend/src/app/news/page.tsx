@@ -141,7 +141,7 @@ const NewsPage = () => {
       </section>
 
       {/* News Content */}
-      <section className="py-16 bg-gray-50">
+      <section className="py-16 bg-white">
         <div className="max-w-6xl mx-auto px-6">
           {filteredNews.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-2xl shadow-lg">
@@ -214,7 +214,7 @@ const NewsPage = () => {
 
  {/* Newsletter Section */}
 <section className="py-16 bg-white">
-  <div className="max-w-6xl mx-auto px-6">
+  <div className="max-w-7xl mx-auto px-6">
     <div className="bg-gradient-to-br from-[#e0f5a1] to-[#a3d921]/30 rounded-2xl p-8 md:p-12 overflow-hidden">
       <div className="flex flex-col md:flex-row items-center">
         {/* Image on the left */}

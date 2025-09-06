@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { ChevronDown, ChevronUp, Leaf, Search, MessageSquare } from 'lucide-react';
 import Header from '../components/header';
 import Footer from '../components/footer';
+import Link from 'next/link';
 
 const FAQPage = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -112,7 +113,7 @@ const FAQPage = () => {
           <div className="absolute inset-0 bg-gradient-to-l from-[#036424] to-transparent"></div>
         </div>
         
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
+        <div className="max-w-7xl mx-auto px-6 relative z-10 ">
           <div className="max-w-3xl">
             <h1 className="text-5xl md:text-6xl font-bold mb-6 leading-tight" style={{fontFamily: 'var(--font-poppins)'}}>
               Frequently Asked <span className="text-[#e0f5a1]">Questions</span>
@@ -209,7 +210,7 @@ const FAQPage = () => {
 
       {/* Still Have Questions Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-4xl mx-auto px-6 text-center">
+        <div className="max-w-7xl mx-auto px-6 text-center">
           <div className="bg-gradient-to-br from-[#e0f5a1] to-[#a3d921]/30 rounded-2xl p-12">
             <h2 className="text-3xl font-bold text-[#036424] mb-4" style={{fontFamily: 'var(--font-poppins)'}}>
               Still have questions?
@@ -218,12 +219,11 @@ const FAQPage = () => {
               Can't find the answer you're looking for? Our team is here to help you with any questions about our AI fruit inspection technology.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
+              <Link href="/contactus">
               <button className="bg-[#036424] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#02521c] transition-colors">
                 Contact Support
               </button>
-              <button className="bg-white text-[#036424] border-2 border-[#036424] px-8 py-3 rounded-lg font-semibold hover:bg-[#036424] hover:text-white transition-colors">
-                Schedule a Demo
-              </button>
+              </Link>
             </div>
           </div>
         </div>
