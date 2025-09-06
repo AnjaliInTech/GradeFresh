@@ -191,6 +191,53 @@ const page = () => {
           </div>
         </div>
       </section>
+      {/* Alternative News Section with Card Previews */}
+<section className="py-16 bg-gradient-to-b from-[white] to-[#e0f5a1]">
+  <div className="max-w-7xl mx-auto px-6">
+    <div className="text-center mb-16">
+      <h2 className="text-4xl md:text-5xl text-[#036424] mb-4" style={{fontFamily: 'var(--font-poppins)'}}>
+        Latest News & Updates
+      </h2>
+      <p className="text-xl text-gray-600 max-w-3xl mx-auto" style={{fontFamily: 'var(--font-poppins)'}}>
+        Stay updated with the latest in fruit inspection technology and industry insights
+      </p>
+      <div className="w-24 h-1 bg-[#a3d920] mx-auto mt-4"></div>
+    </div>
+
+   <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-start ">
+            
+            
+            {/* Right Column - Content */}
+            <div>
+              <h3 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-6" style={{fontFamily: 'var(--font-poppins)'}}>
+                Revolutionizing Fruit Quality Inspection with AI
+              </h3>
+              
+              <p className="text-gray-600 mb-6 leading-relaxed" style={{fontFamily: 'var(--font-poppins)'}}>
+                Grade Fresh transforms how the global fruit trade ensures <br></br>quality through advanced AI-powered inspection systems.<br></br> 
+                Our technology delivers unprecedented accuracy in grading fruits, reducing waste, and increasing profitability 
+                for<br></br> import/export businesses worldwide.
+              </p>
+              
+              <Link href="/news">
+                 <button className="bg-gradient-to-r from-[#036424] to-[#a3d921] text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity">
+                         Read More
+                  </button>
+                 </Link>
+            </div>
+            {/* Left Column - Image */}
+            <div className="relative">
+              <div className="rounded-2xl overflow-hidden shadow-xl">
+                <img 
+                  src="/QC-Header.webp" 
+                  alt="Fruit quality inspection" 
+                  className="w-full h-[400px] object-cover"
+                />
+              </div>
+            </div>
+          </div>
+  </div>
+</section>
 
       
       <Footer/>

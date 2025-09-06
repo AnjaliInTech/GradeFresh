@@ -257,7 +257,7 @@ const ContactUs = () => {
 
       {/* CTA Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-5xl mx-auto px-6 text-center">
+        <div className="max-w-7xl mx-auto px-6 text-center">
           <div className="bg-gradient-to-r from-[#036424] to-[#a3d921] rounded-2xl p-12 text-white">
             <h2 className="text-3xl font-bold mb-4" style={{fontFamily: 'var(--font-poppins)'}}>
               Ready to Transform Your Fruit Quality Process?
@@ -268,9 +268,6 @@ const ContactUs = () => {
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <button className="bg-white text-[#036424] px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
                 Request a Demo
-              </button>
-              <button className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-[#036424] transition-colors">
-                Contact Sales
               </button>
             </div>
           </div>

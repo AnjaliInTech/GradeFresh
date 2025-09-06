@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from '@/app/components/header';
 import Footer from '../components/footer';
+import Link from 'next/link';
 
 
 const About = () => {
@@ -164,7 +165,7 @@ const About = () => {
 
       {/* CTA Section */}
       <section className="py-16 bg-white">
-        <div className="max-w-5xl mx-auto px-6 text-center">
+        <div className="max-w-7xl mx-auto px-6 text-center">
           <h2 className="text-4xl md:text-5xl text-[#036424] mb-6" style={{fontFamily: 'var(--font-poppins)'}}>
             Ready to Transform Your Fruit Quality Process?
           </h2>
@@ -172,12 +173,16 @@ const About = () => {
             Join hundreds of fruit producers and distributors who are already benefiting from our AI-powered inspection technology.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link href="/quality">
             <button className="bg-gradient-to-r from-[#036424] to-[#a3d921] text-white px-8 py-3 rounded-lg hover:opacity-90 transition-opacity font-semibold">
-              Request a Demo
+              Get Started
             </button>
+            </Link>
+            <Link href="/contactus">
             <button className="bg-white text-[#036424] border-2 border-[#036424] px-8 py-3 rounded-lg hover:bg-[#036424] hover:text-white transition-colors font-semibold">
               Contact Our Team
             </button>
+            </Link>
           </div>
         </div>
       </section>
