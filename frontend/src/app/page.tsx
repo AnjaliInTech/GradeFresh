@@ -2,6 +2,7 @@ import React from 'react'
 import Header from '@/app/components/header'
 import Footer from './components/footer'
 import NewsCarousel from './components/news'
+import Link from 'next/link';
 
 const page = () => {
   return (
@@ -21,9 +22,11 @@ const page = () => {
               AI-powered fruit inspection system for import/export businesses.
             </p>
             <div className="mt-8">
+              <Link href="/quality">
               <button className="bg-gradient-to-t from-[#a3d920] to-[#036424] text-white px-10 py-4 rounded-full text-sm uppercase tracking-wide hover:from-[#036424] hover:to-[#a3d920] transition duration-300 font-poppins">
                 Get Started
               </button>
+              </Link>
             </div>
           </div>
 
@@ -84,9 +87,11 @@ const page = () => {
                 for<br></br> import/export businesses worldwide.
               </p>
               
-              <button className="bg-gradient-to-r from-[#036424] to-[#a3d921] text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity">
-                Read More
-              </button>
+              <Link href="/aboutus">
+                 <button className="bg-gradient-to-r from-[#036424] to-[#a3d921] text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity">
+                         Read More
+                  </button>
+                 </Link>
             </div>
           </div>
         </div>
