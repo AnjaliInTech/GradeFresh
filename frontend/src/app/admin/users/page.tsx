@@ -176,7 +176,7 @@ const ManageUsers = () => {
   const navigationItems = [
     { name: "Dashboard", icon: Home, href: "/admin/dashboard" },
     { name: "Manage Users", icon: Users, href: "/admin/users" },
-    { name: "View Reports", icon: FileText, href: "/admin/reports" },
+    { name: "Manage News", icon: FileText, href: "/admin/news" },
     { name: "System Settings", icon: Settings, href: "/admin/settings" },
   ];
 
@@ -470,13 +470,7 @@ const ManageUsers = () => {
                               >
                                 <Eye className="h-4 w-4" />
                               </button>
-                              <button
-                                onClick={() => {/* Edit user */}}
-                                className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors"
-                                title="Edit user"
-                              >
-                                <Edit className="h-4 w-4" />
-                              </button>
+                              
                               <button
                                 onClick={() => deleteUser(user.id)}
                                 disabled={deletingId === user.id}

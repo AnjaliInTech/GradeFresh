@@ -104,6 +104,7 @@ const AdminDashboard = () => {
   const navigationItems = [
     { name: "Dashboard", icon: Home, href: "/admin/dashboard" },
     { name: "Manage Users", icon: Users, href: "/admin/users" },
+      { name: "Manage News", icon: FileText, href: "/admin/news" },
     { name: "View Reports", icon: FileText, href: "/admin/reports" },
     { name: "System Settings", icon: Settings, href: "/admin/settings" },
   ];

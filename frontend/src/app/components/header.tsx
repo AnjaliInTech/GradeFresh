@@ -43,7 +43,7 @@ export default function Header() {
             <Link href="/aboutus" className="text-[#000] hover:text-[#036424]">About US</Link>
             <Link href="/quality" className="text-[#000] hover:text-[#036424]">Upload</Link>
             <Link href="/FAQ" className="text-[#000] hover:text-[#036424]">FAQ</Link>
-            <Link href="/reports" className="text-[#000] hover:text-[#036424]">News</Link>
+            <Link href="/news" className="text-[#000] hover:text-[#036424]">News</Link>
             <Link href="/contactus" className="text-[#000] hover:text-[#036424]">Contact us</Link>
           </div>
         </nav>
